@@ -1,0 +1,10 @@
+#!/bin/bash
+
+until nc -vzw 2 kafka-broker 9092; do
+    echo kafka-broker:9092 is not reachable.
+    sleep 5
+done
+
+echo kafka-broker:9092 is reachable, starting faust application.
+
+faust -A app worker -l info

@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  zookeeper:
+    # build: "images/zookeeper"
+    container_name: "zookeeper"
+    image: "quay.io/lrossett/zookeeper:latest"
+    ports:
+      - "2181:2181"
+    volumes:
+      - "./volumes/zookeeper:/etc/zookeeper"
+  kafka-broker:
+    # build: "images/kafka"
+    container_name: "kafka-broker"
+    image: "quay.io/lrossett/kafka:latest"
+    entrypoint:
+      - "/usr/local/kafka/bin/kafka-server-start.sh"
+    command:
+      - "/etc/kafka-broker/server.properties"
+    ports:
+      - "9092:9092"
+    volumes:
+      - "./volumes/kafka-broker:/etc/kafka-broker"
+    depends_on:
+      - "zookeeper"
+    links:
+      - "zookeeper:zookeeper"
+  kafka-admin:
+    # build: "images/kafka"
+    container_name: "kafka-admin"
+    image: "quay.io/lrossett/kafka:latest"
+    command: ["sleep", "infinity"]
+    depends_on:
+      - "zookeeper"
+      - "kafka-broker"
+    links:
+      - "kafka-broker:kafka-broker"
+      - "zookeeper:zookeeper"
+  faust-app:
+    # build: "images/faust-app"
+    container_name: "faust-app"
+    image: "quay.io/lrossett/faust-app:latest"
+    depends_on:
+      - "kafka-broker"
+    links:
+      - "kafka-broker:kafka-broker"
